@@ -109,14 +109,14 @@ function initHost() {
     // Handle signal data to share with guest
     peer.on('signal', (data) => {
       // In a real implementation, this would be sent via a signaling server
-      // For demo purposes, we'll simulate a signaling channel
+      // For demo purposes, we'll use Electron IPC to share signaling data
       console.log('Host signaling data:', data);
       
-      // Store the signaling data to be shared with the guest
-      sessionStorage.setItem('hostSignal', JSON.stringify(data));
+      // Store the signaling data to be shared with the guest via IPC
+      ipcRenderer.invoke('store-host-signal', JSON.stringify(data));
       
       // Also store the token to validate the connection
-      sessionStorage.setItem('connectionToken', JSON.stringify(tokenData));
+      ipcRenderer.invoke('store-connection-token', JSON.stringify(tokenData));
     });
     
     setupPeerEvents();
@@ -168,7 +168,7 @@ function setupPeerEvents() {
 }
 
 // Initialize guest functionality
-function initGuest() {
+async function initGuest() {
   const link = connectLink.value.trim();
   if (!link) {
     alert('Please enter a connection link');
@@ -204,9 +204,9 @@ function initGuest() {
   
   updateStatus(guestStatusDot, guestStatusText, 'connecting', 'Connecting...');
   
-  // Get the signaling data from the host (simulated via sessionStorage in this demo)
-  const hostSignalStr = sessionStorage.getItem('hostSignal');
-  const storedToken = sessionStorage.getItem('connectionToken');
+  // Get the signaling data from the host via IPC
+  const hostSignalStr = await ipcRenderer.invoke('get-host-signal');
+  const storedToken = await ipcRenderer.invoke('get-connection-token');
   
   if (!hostSignalStr) {
     alert('No signaling data from host. Connection cannot be established.');
@@ -215,7 +215,7 @@ function initGuest() {
   }
   
   // Validate the token
-  if (!storedToken || storedToken !== currentToken) {
+  if (!storedToken || storedToken !== JSON.stringify(tokenData)) {
     alert('Invalid connection token. Connection rejected.');
     updateStatus(guestStatusDot, guestStatusText, 'disconnected', 'Invalid token');
     return;
@@ -318,6 +318,9 @@ messageInput.addEventListener('keypress', (e) => {
       peer.destroy();
       peer = null;
     }
+    
+    // Clear signaling data
+    ipcRenderer.invoke('clear-signaling-data');
     
     showPanel('modeSelection');
     updateStatus(chatStatusDot, chatStatusText, 'disconnected', 'Disconnected');

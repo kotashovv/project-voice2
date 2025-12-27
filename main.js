@@ -54,6 +54,10 @@ app.on('activate', function () {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
+// Store signaling data globally
+let hostSignalingData = null;
+let connectionToken = null;
+
 // IPC handlers for P2P functionality
 ipcMain.handle('generate-token', () => {
   return crypto.randomBytes(32).toString('hex');
@@ -61,5 +65,36 @@ ipcMain.handle('generate-token', () => {
 
 ipcMain.handle('copy-to-clipboard', (event, text) => {
   clipboard.writeText(text);
+  return true;
+});
+
+// Store host signaling data
+ipcMain.handle('store-host-signal', (event, data) => {
+  hostSignalingData = data;
+  console.log('Host signaling data stored');
+  return true;
+});
+
+// Store connection token
+ipcMain.handle('store-connection-token', (event, token) => {
+  connectionToken = token;
+  return true;
+});
+
+// Get host signaling data
+ipcMain.handle('get-host-signal', (event) => {
+  console.log('Getting host signal:', hostSignalingData ? 'available' : 'not available');
+  return hostSignalingData;
+});
+
+// Get connection token
+ipcMain.handle('get-connection-token', (event) => {
+  return connectionToken;
+});
+
+// Clear signaling data
+ipcMain.handle('clear-signaling-data', (event) => {
+  hostSignalingData = null;
+  connectionToken = null;
   return true;
 });

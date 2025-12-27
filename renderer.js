@@ -88,7 +88,7 @@ function initHost() {
     
     // For demo purposes, we'll use localhost:PORT
     // In a real implementation, we'd determine the public IP
-    const hostAddress = '127.0.0.1:8080'; // Placeholder
+    const hostAddress = '0.0.0.0:0'; // Placeholder - in real implementation, would be actual public IP and port
     const link = generateConnectionUrl(hostAddress, JSON.stringify(tokenData));
     invitationLink.value = link;
     
@@ -97,11 +97,14 @@ function initHost() {
     // Create WebRTC peer (as initiator/host)
     peer = new SimplePeer({
       initiator: true,
-      trickle: false,
+      trickle: true,
       config: {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:stun3.l.google.com:19302' },
+          { urls: 'stun:stun4.l.google.com:19302' }
         ]
       }
     });
@@ -227,11 +230,14 @@ async function initGuest() {
     // Create WebRTC peer (as receiver/guest)
     peer = new SimplePeer({
       initiator: false,
-      trickle: false,
+      trickle: true,
       config: {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:stun3.l.google.com:19302' },
+          { urls: 'stun:stun4.l.google.com:19302' }
         ]
       }
     });

@@ -35,7 +35,7 @@ ONCE CONNECTED:
 
 TROUBLESHOOTING:
 - If the application fails to start, make sure Node.js is installed
-- If connections fail, both users might be behind strict firewalls
+- If connections fail, both users might be behind strict firewalls or NAT
 - Make sure both users have a stable internet connection
 
 SECURITY NOTES:

@@ -36,7 +36,10 @@ ONCE CONNECTED:
 TROUBLESHOOTING:
 - If the application fails to start, make sure Node.js is installed
 - If connections fail, both users might be behind strict firewalls or NAT
+- Connection may take up to 30 seconds to establish
 - Make sure both users have a stable internet connection
+- Some corporate firewalls may block P2P connections
+- If you see STUN timeout errors, try again - this is normal during connection establishment
 
 SECURITY NOTES:
 - The application uses end-to-end encryption

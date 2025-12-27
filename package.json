@@ -1,0 +1,27 @@
+{
+  "name": "project-voice",
+  "version": "1.0.0",
+  "description": "A P2P desktop communication app with no login required",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder"
+  },
+  "keywords": [
+    "p2p",
+    "webrtc",
+    "communication",
+    "desktop",
+    "chat"
+  ],
+  "author": "project-voice",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "dependencies": {
+    "simple-peer": "^9.11.1"
+  }
+}

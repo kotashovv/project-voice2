@@ -86,11 +86,51 @@ function initHost() {
       ttl: 10 * 60 * 1000 // 10 minutes TTL
     };
     
-    // For demo purposes, we'll use localhost:PORT
-    // In a real implementation, we'd determine the public IP
-    const hostAddress = '0.0.0.0:0'; // Placeholder - in real implementation, would be actual public IP and port
-    const link = generateConnectionUrl(hostAddress, JSON.stringify(tokenData));
-    invitationLink.value = link;
+    // Create a temporary RTCPeerConnection to get local IP address
+    // This is a workaround to get a more realistic address for signaling
+    const tempPC = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ]
+    });
+    
+    // Create a data channel to trigger ICE candidate generation
+    tempPC.createDataChannel('temp');
+    
+    tempPC.onicecandidate = (event) => {
+      if (event.candidate) {
+        const candidate = event.candidate.candidate;
+        const ipMatch = candidate.match(/([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})/);
+        if (ipMatch) {
+          const localIP = ipMatch[1];
+          if (localIP && !localIP.startsWith('192.168') && !localIP.startsWith('10.') && !localIP.startsWith('172.')) {
+            // Found a public IP, use it
+            const hostAddress = `${localIP}:0`; // Port will be determined by WebRTC
+            const link = generateConnectionUrl(hostAddress, JSON.stringify(tokenData));
+            invitationLink.value = link;
+          }
+        }
+      }
+    };
+    
+    // Create offer to trigger ICE candidate generation
+    tempPC.createOffer()
+      .then(offer => tempPC.setLocalDescription(offer))
+      .catch(err => {
+        console.error('Error creating offer for IP detection:', err);
+        // Fallback to a generic address
+        const hostAddress = '0.0.0.0:0';
+        const link = generateConnectionUrl(hostAddress, JSON.stringify(tokenData));
+        invitationLink.value = link;
+      });
+    
+    // Clean up after a short delay
+    setTimeout(() => {
+      if (tempPC.signalingState !== 'closed') {
+        tempPC.close();
+      }
+    }, 5000);
     
     updateStatus(hostStatusDot, hostStatusText, 'connecting', 'Waiting for guest...');
     
@@ -179,10 +219,14 @@ async function initGuest() {
   }
   
   const parsed = parseConnectionUrl(link);
-  if (!parsed || !parsed.host || !parsed.token) {
+  if (!parsed || !parsed.token) {
     alert('Invalid connection link format');
     return;
   }
+  
+  // The host address is included for information purposes
+  // The actual connection is established via WebRTC signaling
+  console.log('Connecting to host:', parsed.host);
   
   isHost = false;
   

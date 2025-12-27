@@ -40,6 +40,8 @@ TROUBLESHOOTING:
 - Make sure both users have a stable internet connection
 - Some corporate firewalls may block P2P connections
 - If you see STUN timeout errors, try again - this is normal during connection establishment
+- For testing: run one instance in Chrome and another in Firefox, or on separate computers
+- Testing both host and guest in the same browser will not work properly
 
 SECURITY NOTES:
 - The application uses end-to-end encryption
